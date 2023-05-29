@@ -1,0 +1,26 @@
+ersion: '3.1'
+
+services:
+  db:
+    container_name: golang-restful-api-db
+    restart: always
+    networks:
+      - golang-restful-api-network
+    build:
+      context: .
+      dockerfile: go-crud-db.Dockerfile
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_DATABASE: library
+      MYSQL_USER: developer
+      MYSQL_PASSWORD: 123
+    ports:
+      - 3307:3306
+    volumes:
+      - "db-data:/var/lib/mysql"
+
+volumes:
+  db-data:
+
+networks:
+  golang-restful-api-network:
