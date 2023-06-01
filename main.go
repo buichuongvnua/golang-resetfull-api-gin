@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	configuration "example.com/configs"
@@ -26,7 +28,7 @@ func main() {
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
 		productTopic := "producer-product-table-testing"
-		publisher, _ := kafkas.NewPublisher()
+		publisher, _ := kafkas.NewPublisher([]string{"localhost:8098"})
 		product := map[string]string{
 			"name": "Hello",
 		}
@@ -46,9 +48,15 @@ func main() {
 		Dialer: dialer,
 		Topic:  "producer-product-table-testing",
 	}
-	productConsumer.CreateConnection([]string{"localhost:9092"}, 0)
+	productConsumer.CreateConnection([]string{"localhost:8098"}, "producer-product-table-testing_group")
+	go productConsumer.Read(schemas.Product{}, func(product schemas.Product, err error) {
+		fmt.Println("Consumer collect")
+	})
 	go productConsumer.Read(schemas.Product{}, func(product schemas.Product, err error) {
 		fmt.Println("Consumer collect")
 	})
 	r.Run()
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
 }

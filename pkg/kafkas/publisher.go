@@ -9,16 +9,15 @@ import (
 
 type Publisher struct {
 	Writer *kafka.Writer
-	Dialer *kafka.Dialer
 }
 
-func NewPublisher() (*Publisher, error) {
+func NewPublisher(brokers []string) (*Publisher, error) {
 	dialer := &kafka.Dialer{
 		Timeout:   10 * time.Second,
 		DualStack: true,
 	}
 	writer := kafka.NewWriter(kafka.WriterConfig{
-		Brokers:      []string{"localhost:9092"},
+		Brokers:      brokers,
 		BatchBytes:   1000000,
 		BatchTimeout: time.Millisecond * 5,
 		Balancer:     &kafka.RoundRobin{},
@@ -27,7 +26,6 @@ func NewPublisher() (*Publisher, error) {
 
 	return &Publisher{
 		Writer: writer,
-		Dialer: dialer,
 	}, nil
 }
 
